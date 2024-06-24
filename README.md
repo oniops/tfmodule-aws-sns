@@ -29,7 +29,7 @@ module "ctx" {
 }
 
 module "demo" {
-  source      = "git::https://code.bespinglobal.com/scm/op/tfmodule-aws-sns.git"
+  source      = "git::https://code.bespinglobal.com/scm/op/tfmodule-aws-sns.git?ref=v1.0.0"
   context     = module.ctx.context
   name        = "demo"
   kms_key_arn = data.aws_kms_alias.main.arn
@@ -103,7 +103,17 @@ module "demo" {
 
 
 
-## Reference
+## Appendix 
+
+### Git Tagging
+
+```
+# tagging 
+git tag v1.0.0 
+
+# push to tag
+git push origin v1.0.0            
+```
 
 
 
