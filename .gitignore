@@ -1,0 +1,12 @@
+# Local .terraform directories
+**/.terraform/*
+**/.terraform.lock.hcl
+**/.terraform.tfstate.lock.info
+**/*.tfstate.backup
+**/*.log
+
+/target/
+/logs/
+
+# Intellij
+/.idea/
