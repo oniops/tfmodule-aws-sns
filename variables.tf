@@ -19,6 +19,7 @@ Ex)
     Version   = "2012-10-17"
     Statement = [
       {
+        Sid       = "AllowSqsSendToSns"
         Effect    = "Allow"
         Principal = {
           Service = "sqs.amazonaws.com"
@@ -247,6 +248,7 @@ Ex)
     {
       protocol = "email"
       endpoint = "no-reply@company.com
+      confirmation_timeout_in_minutes = 10
     },
     {
       protocol = "sqs"
@@ -259,6 +261,22 @@ Ex)
       filter_policy        = jsonencode({
         event_type = ["order_placed", "order_shipped"]
       })
+      delivery_policy      = jsonencode({
+        healthyRetryPolicy" = {
+          "minDelayTarget": 1,
+          "maxDelayTarget": 60,
+          "numRetries": 50,
+          "numNoDelayRetries": 3,
+          "numMinDelayRetries": 2,
+          "numMaxDelayRetries": 35,
+          "backoffFunction": "exponential"
+      },
+      throttlePolicy = {
+        maxReceivesPerSecond = 10
+      },
+      requestPolicy = {
+        "headerContentType": "application/json"
+      }})
     },
     {
       protocol = "sqs"
@@ -275,6 +293,69 @@ Ex)
   }
 EOF
 }
+
+variable "create_topic_policy" {
+  description = "Determines whether an SNS topic policy is created"
+  type        = bool
+  default     = true
+}
+
+variable "source_topic_policy_documents" {
+  description = "List of IAM policy documents that are merged together into the exported document. Statements must have unique `sid`s"
+  type        = list(string)
+  default     = []
+}
+
+variable "override_topic_policy_documents" {
+  description = "List of IAM policy documents that are merged together into the exported document. In merging, statements with non-blank `sid`s will override statements with the same `sid`"
+  type        = list(string)
+  default     = []
+}
+
+variable "enable_default_topic_policy" {
+  description = "Specifies whether to enable the default topic policy. Defaults to `true`"
+  type        = bool
+  default     = true
+}
+
+variable "policy_statements" {
+  type        = any
+  default     = {}
+  description = <<EOF
+A map of IAM policy [statements](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document#statement) for custom permission usage
+
+  policy_statements = {
+    pub = {
+      actions = ["sns:Publish"]
+      principals = [{
+        type        = "AWS"
+        identifiers = [
+          data.aws_caller_identity.current.arn
+        ]
+      }]
+    },
+
+    sub = {
+      actions = [
+        "sns:Subscribe",
+        "sns:Receive",
+      ]
+
+      principals = [{
+        type        = "AWS"
+        identifiers = ["*"]
+      }]
+
+      conditions = [{
+        test     = "StringLike"
+        variable = "sns:Endpoint"
+        values   = [module.sqs.queue_arn]
+      }]
+    }
+  }
+EOF
+}
+
 
 variable "tags" {
   description = "A map of tags to add to all resources"
