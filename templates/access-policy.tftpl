@@ -1,0 +1,37 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowDefaultAccess",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::${account_id}:root"
+            },
+            "Action": [
+                "sns:Publish",
+                "sns:Subscribe",
+                "sns:GetTopicAttributes",
+                "sns:SetTopicAttributes",
+                "sns:ListSubscriptionsByTopic",
+                "sns:AddPermission",
+                "sns:RemovePermission",
+                "sns:DeleteTopic"
+            ],
+            "Resource": "${topic_arn}"
+        },
+        {
+            "Sid": "DenyInsecureTransport",
+            "Effect": "Deny",
+            "Principal": {
+                "AWS": "*"
+            },
+            "Action": "sns:Publish",
+            "Resource": "${topic_arn}",
+            "Condition": {
+                "Bool": {
+                    "aws:SecureTransport": "false"
+                }
+            }
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 variable "context" {
   description = "Provides standardized naming policy and attribute information for data source reference to define cloud resources for a Project."
-  type        = object({
+  type = object({
     account_id  = string
     region      = string
     project     = string
